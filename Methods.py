@@ -1,123 +1,102 @@
 '''
-https://pynote.readthedocs.io/en/latest/DataTypes/Touples.html
-https://python-reference.readthedocs.io/en/latest/docs/functions/cmp.html
-
+# will be followed by explination of my code implementations or remarks about it
+#!!! will indicate the pseudocode counterparts given in ITRI615
 '''
 
-def LWZ_Encode(array):
-    char = array[0]
-    series = ()????
-    for item in array:
-        #No need for an actual code table; checking if 0-255 with <256
-        if(char+series < 256):
-            series += char
+import cv2 #needed for image to array formatting
+
+#The fact that this function doesn't exist as a part of dictionary methods???
+def get_Key_From_Value(val, dict):
+    for key, value in dict.items():
+         if val == value:
+             return key
+
+#Compress/Encode Algorithm
+def LWZ_Encode(uncompressed):
+    #code table is set as a dictionary as to store both the code and 'array' as a part of one data type
+    #- i.e. 256: '1,1'
+    max = 256 #Current implementation will only function on values 0 - 255
+
+    code_Table = {int(i): str(i) for i in range(max)}                           #!!! initial code table: 0-255
+
+
+    series = str(uncompressed.pop(0))                                           #!!! series <= 1st character
+    compressed = [] #the output array
+
+    for char in uncompressed:                                                   #!!! while(new input available)
+
+        combo = series+","+char # not memory optimised
+        if combo in code_Table.values():                                        #!!! if(series+char is in codetable)
+            series = combo                                                      #!!! series = series + char
 
         else:
-            out.Series
-            code_Table.append(series+char)
-            series = char
+            compressed.append(get_Key_From_Value(series, code_Table))           #!!! output code for series
+            code_Table[max] = combo                                             #!!! feed series+char in codetable
+            max += 1 #move on to next new code
+            series = char                                                       #!!! series <= char
 
-    out.Series
+    if series: #if there is anything left in series
+            compressed.append(get_Key_From_Value(series, code_Table))           #!!! output code for series
 
-    return encoded_Array
+    return compressed #end
 
-def LWZ_Decode(array):
-    code_Table = create_Code_Table()
-    new_Code = array[0]
-
-    while(input):
-        if(new_Code !in code_Table):
-            series = old_Code
-            series += old_Code
-
+def LWZ_Decode(compressed):
+    max = 256
+    code_Table = {int(i): str(i) for i in range(max)}                           #!!! initial code table: 0-255
+#########################################################
+    w = result = compressed.pop(0)
+    for k in compressed:
+        if k in dictionary:
+            entry = dictionary[k]
+        elif k == dict_size:
+            entry = w + w[0]
         else:
-            series = new_Code
-
-        out.series
-        char = series[0]
-        code_Table.append(old_Code+char)
-        old_Code = new_Code
-
-    return decoded_Array
-
-'''
-import cv2
-import numpy as np
-
-
-
-#Lists must be in correct order to be picked up
-#If Series has multiple numbers - needs to be in a seperate list
-def check_For_Sublist(list1, list2):
-   l1 = [item for item in list1 if item in list2]
-   l2 = [item for item in list2 if item in list1]
-   return l1 == l2
-
-def create_Code_Table():
-    code_Table = []
-    for i in range(0,256):
-        code_Table.append(str(i))
-    return code_Table
-
-
-def LWZ_Encode(array):
-    code_Table_Size = 256
-    #code_Table = {str(int(i)): str(int(i)) for i in range(code_Table_Size)}
-    code_Table = create_Code_Table()
-
-    char = []
-    result = []
-    buffer = []
-    for item in array:
-        buffer.append(item)
-        series = char + buffer
-        buffer.clear()
-        if check_For_Sublist(series,code_Table):
-            char = series
-        else:
-            result.append(code_Table[char])
-            code_Table[series] = code_Table_Size
-            code_Table_Size += 1
-            char = item
-
-    for value in code_Table.values():
-	       print(value)
-    if char:
-        result.append(code_Table[tuple(char)])
-
-    return result
-
-
-
-def LWZ_Decode(encode):
-
-    code_Table_Size = 256
-    code_Table = {chr(i): chr(i) for i in range(code_Table_Size)}
-
-
-    char = result = encode.pop(0)
-    for thing in encode:
-        if thing in code_Table:
-            entry = code_Table[thing]
-        elif thing == code_Table_Size:
-            entry = char + char[0]
-        else:
-            raise ValueError('Bad compressed k: %s' % thing)
+            raise ValueError('Bad compressed k: %s' % k)
         result += entry
 
-        code_Table[code_Table_Size] = char + entry[0]
-        code_Table_Size += 1
+        # Add w+entry[0] to the dictionary.
+        dictionary[dict_size] = w + entry[0]
+        dict_size += 1
 
-        char = entry
+        w = entry
     return result
 
+def intArray_to_strArray(array):
+    for item in array:
+        for j in range(len(item)):
+            item[j] = str(item[j])
+    return array
 
-#img = (cv2.imread('some.jpg'))
-#gray = (cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)).tolist()
+img = (cv2.imread('some.jpg'))
+gray = (cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)).tolist()
 
-compressed = LWZ_Encode([1,1,1,2,3,4,4,4,1,1,1,2,3,4,4,4,1,1,1,2,3,4,4,4])
-print (compressed)
-#decompressed = LWZ_Decode(compressed)
-#print (decompressed)
+array = intArray_to_strArray(gray)
 
+def int_str(arr):
+    for j in range(len(arr)):
+        arr[j] = str(arr[j])
+    return arr
+
+
+
+arr = [1,1,1,2,3,4,4,4,1,1,1,2,3,4,4,4,1,1,1,2,3,4,4,4]
+arr2 = int_str(arr)
+test = LWZ_Encode(arr2)
+print(test)
+'''
+test2 = LWZ_Decode(int_str(test))
+print(test2)
+'''
+'''
+compressed_Matrix = []
+for item in array:
+    compressed = LWZ_Encode(item)
+    compressed_Matrix.append(compressed)
+print(compressed_Matrix)
+
+decompressed_Matrix = []
+for thing in compressed_Matrix:
+    decompressed = LWZ_Decode(thing)
+    decompressed_Matrix.append(decompressed)
+print(decompressed_Matrix)
 '''
