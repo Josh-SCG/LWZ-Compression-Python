@@ -2,7 +2,6 @@
 # will be followed by explination of my code implementations or remarks about it
 #!!! will indicate the pseudocode counterparts given in ITRI615
 '''
-
 import cv2 #needed for image to array formatting
 
 #The fact that this function doesn't exist as a part of dictionary methods???
@@ -10,6 +9,19 @@ def get_Key_From_Value(val, dict):
     for key, value in dict.items():
          if val == value:
              return key
+
+
+#Formating functions
+def intArray_To_StrArray(arr):
+    for j in range(len(arr)):
+        arr[j] = str(arr[j])
+    return arr
+
+def strArray_To_intArray(arr):
+    for j in range(len(arr)):
+        arr[j] = int(arr[j])
+    return arr
+
 
 #Compress/Encode Algorithm
 def LWZ_Encode(uncompressed):
@@ -46,58 +58,63 @@ def LWZ_Decode(compressed):
 
     uncompressed = []
     series = []
+    char = ''
 
     old_Code = compressed.pop(0)                                                #!!! old code <= 1st input
-    uncompressed.append(int(old_Code))                                          #!!! output value of old code
+    char = (code_Table[int(old_Code)])                                          #!!! char <= value for old code
+    uncompressed.append(char)                                                   #!!! output value of old code
 
-    for new_Code in compressed:
-        if int(new_Code) in code_Table.keys():
-            temp = code_Table[int(old_Code)]
-            series.append(temp[:])
+    for new_Code in compressed:                                                 #!!! while(still input left)
+        if int(new_Code) == max:                                                #!!! if newcode not in table
 
-        elif int(new_Code) == max:
+            series.clear()                                                      #\
+            series.extend((code_Table[int(old_Code)]))                          #!!! series <= series + value of old code
+            series.extend(char)                                                 #/
+
+        elif int(new_Code) in code_Table.keys():                                #!!! else
             series.clear()
-            series.append(old_Code)
-            series.append(old_Code)
-        else:
-            raise ValueError('Bad compressed k: %s' % new_Code)
+            series.extend(code_Table[int(new_Code)])                            #!!! series <= value old code
 
-        uncompressed.append(series[:])
-        code_Table[max] = old_Code +","+ series[0]
+        else: #error handling in case compressed data is out of order
+            raise ValueError(new_Code," not existing")
+
+
+        uncompressed.extend(series)                                             #!!! output series
+        char = series[0]                                                        #!!! char <= 1st char of series
+
+        char_oldCode_together = []
+        char_oldCode_together.extend(code_Table[int(old_Code)])
+        char_oldCode_together.extend(char)
+        code_Table[max] = char_oldCode_together                                 #!!! add old code value + char by codetable
         max += 1
-        old_Code = new_Code
 
+        old_Code = new_Code                                                     #!!! old code <= new code
 
-
-    print(code_Table)
+    uncompressed = strArray_To_intArray(uncompressed)
     return uncompressed
 
-def intArray_to_strArray(array):
-    for item in array:
-        for j in range(len(item)):
-            item[j] = str(item[j])
+
+
+def image_TO_Array(image):
+    cv2_Data = (cv2.imread(image))
+    grayscale_Data = (cv2.cvtColor(cv2_Data, cv2.COLOR_BGR2GRAY)).tolist()
+    array = intArray_to_strArray(grayscale_Data)
     return array
 
-img = (cv2.imread('some.jpg'))
-gray = (cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)).tolist()
 
-#array = intArray_to_strArray(gray)
-
-def int_str(arr):
-    for j in range(len(arr)):
-        arr[j] = str(arr[j])
-    return arr
 
 
 
 arr = [1,1,1,2,3,4,4,4,1,1,1,2,3,4,4,4,1,1,1,2,3,4,4,4]
-arr2 = int_str(arr)
+print(arr)
+arr2 = intArray_To_StrArray(arr)
 test = LWZ_Encode(arr2)
 print(test)
-test2 = LWZ_Decode(int_str(test))
+test2 = LWZ_Decode(intArray_To_StrArray(test))
 print(test2)
 
-'''
+
+
 compressed_Matrix = []
 for item in array:
     compressed = LWZ_Encode(item)
@@ -109,4 +126,3 @@ for thing in compressed_Matrix:
     decompressed = LWZ_Decode(thing)
     decompressed_Matrix.append(decompressed)
 print(decompressed_Matrix)
-'''
