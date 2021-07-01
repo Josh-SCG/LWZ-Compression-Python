@@ -15,8 +15,8 @@ def get_Key_From_Value(val, dict):
 def LWZ_Encode(uncompressed):
     #code table is set as a dictionary as to store both the code and 'array' as a part of one data type
     #- i.e. 256: '1,1'
-    max = 256 #Current implementation will only function on values 0 - 255
 
+    max = 256 #Current implementation will only function on values 0 - 255
     code_Table = {int(i): str(i) for i in range(max)}                           #!!! initial code table: 0-255
 
 
@@ -43,23 +43,34 @@ def LWZ_Encode(uncompressed):
 def LWZ_Decode(compressed):
     max = 256
     code_Table = {int(i): str(i) for i in range(max)}                           #!!! initial code table: 0-255
-#########################################################
-    w = result = compressed.pop(0)
-    for k in compressed:
-        if k in dictionary:
-            entry = dictionary[k]
-        elif k == dict_size:
-            entry = w + w[0]
+
+    uncompressed = []
+    series = []
+
+    old_Code = compressed.pop(0)                                                #!!! old code <= 1st input
+    uncompressed.append(int(old_Code))                                          #!!! output value of old code
+
+    for new_Code in compressed:
+        if int(new_Code) in code_Table.keys():
+            temp = code_Table[int(old_Code)]
+            series.append(temp[:])
+
+        elif int(new_Code) == max:
+            series.clear()
+            series.append(old_Code)
+            series.append(old_Code)
         else:
-            raise ValueError('Bad compressed k: %s' % k)
-        result += entry
+            raise ValueError('Bad compressed k: %s' % new_Code)
 
-        # Add w+entry[0] to the dictionary.
-        dictionary[dict_size] = w + entry[0]
-        dict_size += 1
+        uncompressed.append(series[:])
+        code_Table[max] = old_Code +","+ series[0]
+        max += 1
+        old_Code = new_Code
 
-        w = entry
-    return result
+
+
+    print(code_Table)
+    return uncompressed
 
 def intArray_to_strArray(array):
     for item in array:
@@ -70,7 +81,7 @@ def intArray_to_strArray(array):
 img = (cv2.imread('some.jpg'))
 gray = (cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)).tolist()
 
-array = intArray_to_strArray(gray)
+#array = intArray_to_strArray(gray)
 
 def int_str(arr):
     for j in range(len(arr)):
@@ -83,10 +94,9 @@ arr = [1,1,1,2,3,4,4,4,1,1,1,2,3,4,4,4,1,1,1,2,3,4,4,4]
 arr2 = int_str(arr)
 test = LWZ_Encode(arr2)
 print(test)
-'''
 test2 = LWZ_Decode(int_str(test))
 print(test2)
-'''
+
 '''
 compressed_Matrix = []
 for item in array:
