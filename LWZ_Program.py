@@ -3,6 +3,8 @@
 #!!! will indicate the pseudocode counterparts given in ITRI615
 '''
 import cv2 #needed for image to array formatting
+import tkinter as tk
+
 
 #The fact that this function doesn't exist as a part of dictionary methods???
 def get_Key_From_Value(val, dict):
@@ -31,11 +33,11 @@ def LWZ_Encode(uncompressed):
     max = 256 #Current implementation will only function on values 0 - 255
     code_Table = {int(i): str(i) for i in range(max)}                           #!!! initial code table: 0-255
 
-
-    series = str(uncompressed.pop(0))                                           #!!! series <= 1st character
+    breakable_uncompressed = uncompressed
+    series = str(breakable_uncompressed.pop(0))                                           #!!! series <= 1st character
     compressed = [] #the output array
 
-    for char in uncompressed:                                                   #!!! while(new input available)
+    for char in breakable_uncompressed:                                                   #!!! while(new input available)
 
         combo = series+","+char # not memory optimised
         if combo in code_Table.values():                                        #!!! if(series+char is in codetable)
@@ -59,12 +61,12 @@ def LWZ_Decode(compressed):
     uncompressed = []
     series = []
     char = ''
-
-    old_Code = compressed.pop(0)                                                #!!! old code <= 1st input
-    char = (code_Table[int(old_Code)])                                          #!!! char <= value for old code
+    breakable_compressed = compressed
+    old_Code = breakable_compressed.pop(0)                                                #!!! old code <= 1st input
+    char = (code_Table[int(old_Code)])                                       #!!! char <= value for old code
     uncompressed.append(char)                                                   #!!! output value of old code
 
-    for new_Code in compressed:                                                 #!!! while(still input left)
+    for new_Code in breakable_compressed:                                                 #!!! while(still input left)
         if int(new_Code) == max:                                                #!!! if newcode not in table
 
             series.clear()                                                      #\
@@ -73,7 +75,7 @@ def LWZ_Decode(compressed):
 
         elif int(new_Code) in code_Table.keys():                                #!!! else
             series.clear()
-            series.extend(code_Table[int(new_Code)])                            #!!! series <= value old code
+            series.append(code_Table[int(new_Code)])                            #!!! series <= value old code
 
         else: #error handling in case compressed data is out of order
             raise ValueError(new_Code," not existing")
@@ -90,39 +92,77 @@ def LWZ_Decode(compressed):
 
         old_Code = new_Code                                                     #!!! old code <= new code
 
-    uncompressed = strArray_To_intArray(uncompressed)
-    return uncompressed
+    return(uncompressed)
 
 
 
-def image_TO_Array(image):
-    cv2_Data = (cv2.imread(image))
-    grayscale_Data = (cv2.cvtColor(cv2_Data, cv2.COLOR_BGR2GRAY)).tolist()
-    array = intArray_to_strArray(grayscale_Data)
+'''
+def image_TO_Array():
+    cv2_Data = (cv2.imread("some.jpg"))
+    array = (cv2.cvtColor(cv2_Data, cv2.COLOR_BGR2GRAY)).tolist()
     return array
 
 
 
-
-
-arr = [1,1,1,2,3,4,4,4,1,1,1,2,3,4,4,4,1,1,1,2,3,4,4,4]
-print(arr)
-arr2 = intArray_To_StrArray(arr)
-test = LWZ_Encode(arr2)
-print(test)
-test2 = LWZ_Decode(intArray_To_StrArray(test))
-print(test2)
-
-
-
+array = image_TO_Array()
+print(array[0])
 compressed_Matrix = []
 for item in array:
-    compressed = LWZ_Encode(item)
+    compressed = LWZ_Encode(intArray_To_StrArray(item))
     compressed_Matrix.append(compressed)
-print(compressed_Matrix)
+print(compressed_Matrix[0])
 
 decompressed_Matrix = []
 for thing in compressed_Matrix:
-    decompressed = LWZ_Decode(thing)
+    decompressed = LWZ_Decode(intArray_To_StrArray(thing))
     decompressed_Matrix.append(decompressed)
-print(decompressed_Matrix)
+print(decompressed_Matrix[0])
+'''
+
+input = [1,1,1,2,3,4,4,4,1,1,1,2,3,4,4,4,1,1,1,2,3,4,4,4]
+compressed = []
+decompressed = []
+
+
+
+root = tk.Tk()
+root.title("LWZ Assignment")
+root.geometry('800x230')
+root.configure(background='#99500f') #rrggbb - 00 to ff
+tk.Label(root,text = "Application must be restarted upon completion!",background='#99500f',font=(25)).grid(row=4,column=1,padx=5,pady=5)
+tk.Label(root,text = "Input => ",background='#99500f',font=(25)).grid(row=1,column=0,padx=5,pady=5)
+tk.Label(root,text = str(input),background='#99500f',font=(25)).grid(row=1,column=1,padx=5,pady=5)
+
+
+def howTo():
+    popUp = tk.Tk()
+    tk.Label(popUp,text = "The original input is shown on the window",font=('Arial',18)).pack()
+    tk.Label(popUp,text = "'Encode' will compress the values and present the new values via pop-up",font=('Arial',18)).pack()
+    tk.Label(popUp,text = "'Decode' will decompress the values and present the new values via pop-up",font=('Arial',18)).pack()
+    tk.Label(popUp,text = "\nThe cmd screen will display the actual process, albeit messy",font=('Arial',18)).pack()
+    popUp.attributes("-topmost", True)
+
+
+def encode():
+    global compressed, input
+    compressed = LWZ_Encode(intArray_To_StrArray(input))
+    tk.Label(root,text = str(compressed),background='#99500f',font=(25)).grid(row=2,column=1,padx=5,pady=5)
+
+
+
+def decode():
+    global decompressed
+    decompressed = LWZ_Decode(intArray_To_StrArray(compressed))
+    tk.Label(root,text = str(decompressed),background='#99500f',font=(25)).grid(row=3,column=1,padx=5,pady=5)
+
+
+
+
+howToButton = tk.Button(root,bg="#bbffff",command=howTo, text = "How To Use",width = 17,height=2)
+howToButton.grid(row=0,column=0,padx=5,pady=5)
+encodeButton = tk.Button(root,bg="teal",command=encode, text = "Encode",width = 17,height=2)
+encodeButton.grid(row=2,column=0,padx=5,pady=5)
+decodeButton = tk.Button(root,bg="teal",command=decode, text = "Decode",width = 17,height=2)
+decodeButton.grid(row=3,column=0,padx=5,pady=5)
+
+root.mainloop()
