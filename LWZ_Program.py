@@ -1,7 +1,7 @@
 '''
 Esterhuizen, J 30285976
 # will be followed by explination of my code implementations or remarks about it
-#!!! will indicate the pseudocode counterparts given in ITRI615
+#!!! will indicate the pseudocode counterparts given in ITRI617
 '''
 import tkinter as tk
 
