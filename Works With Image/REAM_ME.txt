@@ -1,0 +1,5 @@
+Includes a pip install python library to handle the image to intensity values and as such will likely only work with the exe unless the module is installed
+pip install -opencv -???
+
+
+needs the image to be named "some.jpg"
